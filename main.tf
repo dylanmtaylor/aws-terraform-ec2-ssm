@@ -18,8 +18,8 @@ resource "random_pet" "pet_name" {
 module "key_pair" {
   source = "terraform-aws-modules/key-pair/aws"
 
-  key_name   = "Dylan Taylor"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDYsYRK9LXIbqJ2LVXQMTun/hUxhiHtSZMVOyjVjAFAWD0heeUUuSRLvvCI97PF3xAIvJaeeICjK0zzaHO67TP0HMzdfRrmjJyYNS7CKopG5U49OYZd6L98vBEKtNBcug1e0LMVUqOPwmhr4fu+g9/0TXPQpksJk6fiNKjjhVu4fRET3G5nvvQuHvclFzRCupR0EkGMrNIwF5pSFQMz1dHtQ6pder7u+Vun4TmPfVRnB4nMnRW7uN5/F/zqvcX0ey/UYe65Kf7LTeadbWb9sVQ9YgxN71YjwsSqBwE84ih9Q3Twgqig/kFhzPEkw3pxsClZjpsf4QF++ONlybzqkApCDYBvMCrewFT53OzEmFOndQoNBh8P6qMtHaDKX/CO5cJ7wu+z0O5rXx88aHPxuaJ9+0sB2ZY5UuoD0o/0GxcATNkpZXvkKiFhHw+6FfQkdIZScSRlHAiqBMnkrIjR9CMibSgflIPer5y3qIHq4nXlwO7y+Hf6HkEe2TYmYnrs/hs= taylord@ITL-X-TAYLORD.local"
+  key_name   = var.ssh_key_name
+  public_key = var.ssh_public_key
 }
 
 # Create a security group that exposes SSH
@@ -91,7 +91,7 @@ resource "aws_route_table" "rt" {
   }
 }
 
-# Associate that route table
+# Associate the subnet to that route table
 resource "aws_route_table_association" "b" {
   subnet_id     = aws_subnet.main.id
   route_table_id = aws_route_table.rt.id
@@ -117,8 +117,8 @@ resource "aws_instance" "test_instance" {
 
  ami                         = "${data.aws_ami.amazon-linux-2.id}"
  associate_public_ip_address = true
- instance_type               = "t3a.micro"
- key_name                    = "Dylan Taylor"
+ instance_type               = var.instance_flavor
+ key_name                    = var.ssh_key_name
  vpc_security_group_ids      = ["${aws_security_group.ssh_sg.id}"]
  subnet_id                   = "${aws_subnet.main.id}"
  availability_zone           = var.availability_zone
