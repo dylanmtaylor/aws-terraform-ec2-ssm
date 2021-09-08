@@ -30,13 +30,13 @@ resource "aws_security_group" "ssh_sg" {
   vpc_id      = aws_vpc.main.id
 
 
-  ingress {
-    description = "SSH from anywhere"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+#   ingress {
+#     description = "SSH from anywhere"
+#     from_port   = 22
+#     to_port     = 22
+#     protocol    = "tcp"
+#     cidr_blocks = ["0.0.0.0/0"]
+#   }
 
   ingress {
     description = "ICMP from anywhere"
@@ -108,6 +108,36 @@ resource "aws_subnet" "main" {
   }
 }
 
+# Creates an IAM profile that allows SSM connections to the machine
+resource "aws_iam_instance_profile" "ssm" {
+  name = "${random_pet.pet_name.id}_ssm_profile"
+  role = aws_iam_role.ssm.name
+}
+
+
+resource "aws_iam_role" "ssm" {
+  name = "${random_pet.pet_name.id}_ssm_role"
+  path = "/"
+  managed_policy_arns = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore", "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"]
+  assume_role_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "sts:AssumeRole",
+            "Principal": {
+               "Service": "ec2.amazonaws.com"
+            },
+            "Effect": "Allow",
+            "Sid": ""
+        }
+    ]
+}
+EOF
+
+}
+
+
 # Create the instance itself
 resource "aws_instance" "test_instance" {
 
@@ -122,4 +152,5 @@ resource "aws_instance" "test_instance" {
  vpc_security_group_ids      = ["${aws_security_group.ssh_sg.id}"]
  subnet_id                   = "${aws_subnet.main.id}"
  availability_zone           = var.availability_zone
+ iam_instance_profile        = aws_iam_instance_profile.ssm.id
 }
