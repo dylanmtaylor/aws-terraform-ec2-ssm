@@ -23,3 +23,11 @@ This must be in the local (connecting) machine's ~/.ssh/config:
 host i-* mi-*
     ProxyCommand sh -c "aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p'"
 ```
+
+Usage:
+
+* Make sure AWS CLI and the session manager plugin are installed (in brew: awscli session-manager-plugin).
+* Make sure AWS environment variables are set (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN)
+* Use terraform to apply the configuration
+* export AWS_DEFAULT_REGION=us-east-1 or replace with region you deployed to
+* aws ssm start-session --target [EC2 instance ID deployed] or ssh ec2-user@[EC2 instance ID deployed]
